@@ -2,10 +2,13 @@ const path = require('path'); // import Node.js path module for path related ope
 
 // create our config object
 const config = {
-  entry: path.join(__dirname, '/client/index.js'), // Abosolute path to our entry file
+  entry: path.join(__dirname, '/client/index.js'), // Absolute path to our entry file
   output: { // our output configuration
     path: path.join(__dirname, './public/'), // output path (directory/folder)
     filename: 'bundle.js' // output bundled file name
+  },
+  resolve: { // Allow imports without specifying .js/.jsx and using index.jsx
+    extensions: ['.js', '.jsx']
   },
   module: { // define our loaders here
     rules: [ // array of rules to handle different file types
