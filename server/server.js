@@ -18,7 +18,7 @@ function requestHandler(request, response) {
   // use the exists method of the fs module to check if the requestedResource
   // exists.
   fs.exists(requestedResource, function(exists) {
-    // check if file does't exist and return a 404 status (File not found)
+    // check if file doesn't exist and return a 404 status (File not found)
     if(!exists) {
       response.writeHead(404, {"Content-Type": "text/plain"});
       response.write("404 Not Found\n");
@@ -26,7 +26,7 @@ function requestHandler(request, response) {
       return;
     }
 
-    // Check if the reqested resource is a directory. If it is, just set our
+    // Check if the requested resource is a directory. If it is, just set our
     // index.html page as the requested resource.
     if (fs.statSync(requestedResource).isDirectory()) {
       requestedResource += '/index.html';
@@ -37,43 +37,41 @@ function requestHandler(request, response) {
     fs.readFile(
       requestedResource, // path to requested resource
       "binary", // read the requested resource as a binary file
-      function(err, file) { // call back function to handle end of file reading
+      (err, file) => { // call back function to handle end of file reading
 
-      // If an error occured while reading the file, send the error message
-      // with a status code of 500 (Internal server error)
-      if (err) {
-        response.writeHead(500, {"Content-Type": "text/plain"});
-        response.write(err + "\n");
-        response.end();
-        return;
+        // If an error occured while reading the file, send the error message
+        // with a status code of 500 (Internal server error)
+        if (err) {
+          response.writeHead(500, {"Content-Type": "text/plain"});
+          response.write(err + "\n");
+          response.end();
+          return;
+        }
+
+        // Helper object to map requested content types (extension) to response
+        // mime types
+        const contentTypesByExtension = {
+          '.html': "text/html",
+          '.css':  "text/css",
+          '.js':   "text/javascript",
+        };
+
+        // Helper object to hold our headers
+        const headers = {};
+        // get the content type using the requested resource file extension
+        const contentType = contentTypesByExtension[
+          path.extname(requestedResource)
+        ];
+
+        // if the requested resource maps to any of our content type extension,
+        // then set the Content-Type field for our response headers.
+        if (contentType) headers["Content-Type"] = contentType;
+
+        response.writeHead(200, headers); // write response header (if any)
+        response.write(file, "binary"); // write content of read file (binary format)
+        response.end(); // send response and close request
       }
-
-      // Helper object to map requested content types (extension) to response
-      // mime types
-      const contentTypesByExtension = {
-        '.html': "text/html",
-        '.css':  "text/css",
-        '.js':   "text/javascript"
-      };
-
-      // Helper object to hold our headers
-      const headers = {};
-      // get the content type using the requested resource file extension
-      const contentType = contentTypesByExtension[
-        path.extname(requestedResource)
-      ];
-
-      // if the requested resource maps to any of our content type extension,
-      // then set the Content-Type field for our response headers.
-      if (contentType) {
-        headers["Content-Type"] = contentType;
-      }
-
-      response.writeHead(200, headers); // write response header (if any)
-      response.write(file, "binary"); // write content of read file (binary format)
-      response.end(); // send response and close request
-    });
-
+    );
   });
 }
 
